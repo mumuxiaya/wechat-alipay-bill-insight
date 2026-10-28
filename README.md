@@ -4,7 +4,7 @@
 
 纯静态前端，没有后端、没有数据库、没有网络请求。文件只在浏览器内存里解析，不会上传到任何服务器。
 
-在线使用：<https://yujiang312.github.io/wechat-alipay-bill-insight/>
+在线使用：<https://mumuxiaya.github.io/wechat-alipay-bill-insight/>
 
 ## 特性
 
@@ -35,7 +35,7 @@ npx serve .
 
 ### 方式三：GitHub Pages
 
-本仓库已开启 Pages，直接访问 <https://yujiang312.github.io/wechat-alipay-bill-insight/>。
+本仓库已开启 Pages，直接访问 <https://mumuxiaya.github.io/wechat-alipay-bill-insight/>。
 自己 fork 后，在 Settings → Pages 里把 Source 设为 `main` 分支根目录即可。
 
 ## 账单怎么导出
