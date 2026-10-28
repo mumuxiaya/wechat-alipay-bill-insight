@@ -116,3 +116,7 @@ wechat-alipay-bill-insight/
 ## 二次开发
 
 想扩充分类词库，改 `assets/parser.js` 里的 `RULES` 即可，格式是 `[分类名, 正则]`，**顺序敏感**——越具体的规则放越前，「其他」是兜底。分类名必须出现在 `CATEGORIES` 里。
+
+## 许可证
+
+[MIT](LICENSE) © 2026 mumuxiaya
