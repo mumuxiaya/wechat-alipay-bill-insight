@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>微信 / 支付宝消费账单统计系统</title>
+  <style>
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./assets/fonts/Outfit-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Outfit';
+      src: url('./assets/fonts/Outfit-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: #F4F6FA;
+      --surface: #FFFFFF;
+      --surface-2: #F8FAFC;
+      --ink: #0F172A;
+      --ink-2: #1E293B;
+      --muted: #64748B;
+      --muted-2: #94A3B8;
+      --rule: #E2E8F0;
+      --rule-2: #EEF2F7;
+      --accent: #2563EB;
+      --accent-soft: #EFF6FF;
+      --accent2: #059669;
+      --accent2-soft: #ECFDF5;
+      --warn: #D97706;
+      --warn-soft: #FFFBEB;
+      --danger: #DC2626;
+      --danger-soft: #FEF2F2;
+      --violet: #7C3AED;
+      --violet-soft: #F5F3FF;
+      --cat-1: #2563EB;
+      --cat-2: #0EA5E9;
+      --cat-3: #14B8A6;
+      --cat-4: #10B981;
+      --cat-5: #84CC16;
+      --cat-6: #F59E0B;
+      --cat-7: #F97316;
+      --cat-8: #EF4444;
+      --cat-9: #EC4899;
+      --cat-10: #8B5CF6;
+      --cat-11: #94A3B8;
+      --cat-12: #6366F1;
+      --cat-13: #0D9488;
+      --cat-14: #A855F7;
+      --cat-15: #D946EF;
+      --cat-16: #F43F5E;
+      --cat-17: #FB923C;
+      --cat-18: #64748B;
+      --cat-19: #22C55E;
+      --cat-20: #EAB308;
+      --font: 'Outfit', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
+      --shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 8px 24px rgba(15, 23, 42, .04);
+      --radius: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 420px at 12% -8%, rgba(37, 99, 235, .055), transparent 60%),
+        radial-gradient(900px 380px at 92% -4%, rgba(5, 150, 105, .045), transparent 60%),
+        var(--bg);
+      font-family: var(--font);
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input, select { font-family: var(--font); }
+    button { -webkit-tap-highlight-color: transparent; }
+    ::selection { background: #DBEAFE; }
+
+    .app {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px 18px;
+      max-width: 2200px;
+      margin: 0 auto;
+    }
+
+    /* ==== Header ==== */
+    .topbar { flex: 0 0 auto; height: 56px; display: flex; align-items: center; gap: 20px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 46%; }
+    .brand > div { min-width: 0; }
+    .brand-mark {
+      width: 4px; height: 34px; border-radius: 2px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+      flex: 0 0 auto;
+    }
+    .brand h1 { margin: 0; font-size: 22px; line-height: 1.08; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .brand p {
+      margin: 5px 0 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--muted);
+      letter-spacing: .01em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand p b { color: var(--accent); font-weight: 600; }
+    .top-meta { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+    .chip {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 9px;
+      border-radius: 999px; background: #fff; border: 1px solid var(--rule);
+      color: var(--muted); font-size: 10.5px; white-space: nowrap;
+    }
+    .chip.accent { color: var(--accent); border-color: #BFDBFE; background: var(--accent-soft); }
+    .chip.green { color: var(--accent2); border-color: #A7F3D0; background: var(--accent2-soft); }
+    .top-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+
+    .btn {
+      height: 30px; padding: 0 13px; border-radius: 8px;
+      border: 1px solid var(--rule); background: #fff; color: var(--ink-2);
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: .15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover { border-color: #CBD5E1; background: var(--surface-2); }
+    .btn.primary {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, .22);
+    }
+    .btn.primary:hover { background: #1D4ED8; }
+    .btn.ghost { border-color: transparent; background: transparent; color: var(--muted); }
+    .btn.ghost:hover { background: #fff; border-color: var(--rule); color: var(--ink); }
+    .btn.small { height: 28px; font-size: 11px; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ==== 已导入文件条 ==== */
+    .filebar { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .filebar[hidden] { display: none; }
+    .filebar-label { flex: 0 0 auto; font-size: 10.5px; color: var(--muted-2); white-space: nowrap; }
+    .filebar-label b { color: var(--ink-2); font-weight: 600; }
+    .file-list { display: flex; align-items: center; gap: 6px; min-width: 0; overflow-x: auto; scrollbar-width: none; padding: 1px 0; }
+    .file-list::-webkit-scrollbar { display: none; }
+    .file-item {
+      display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; max-width: 340px;
+      height: 24px; padding: 0 3px 0 9px; border-radius: 999px;
+      background: #fff; border: 1px solid var(--rule); font-size: 10.5px; color: var(--ink-2);
+    }
+    .file-dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 auto; background: var(--muted-2); }
+    .file-dot.wx { background: #07C160; }
+    .file-dot.az { background: #1677FF; }
+    .file-name { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-meta { color: var(--muted-2); white-space: nowrap; }
+    .file-del {
+      width: 17px; height: 17px; padding: 0; border: 0; border-radius: 50%; background: transparent;
+      color: var(--muted-2); font-size: 13px; line-height: 1; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .file-del:hover { background: #FEE2E2; color: #DC2626; }
+
+    /* ==== KPI ==== */
+    .kpi-grid { flex: 0 0 auto; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+    .kpi {
+      position: relative; overflow: hidden; background: var(--surface);
+      border: 1px solid var(--rule); border-radius: 12px; padding: 9px 14px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .03);
+    }
+    .kpi::before {
+      content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%;
+      background: var(--kpi-color, var(--accent)); opacity: .9;
+    }
+    .kpi-label { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--muted); white-space: nowrap; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--kpi-color, var(--accent)); flex: 0 0 auto; }
+    .kpi-value {
+      margin-top: 2px; font-size: 24px; line-height: 1.12; font-weight: 700;
+      letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    .kpi-value .unit { font-size: 10.5px; font-weight: 500; color: var(--muted); margin-left: 3px; letter-spacing: 0; }
+    .kpi-sub { margin-top: 2px; font-size: 10.5px; color: var(--muted-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ==== Filters ==== */
+    .filterbar {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; row-gap: 8px;
+      padding: 6px 12px; background: rgba(255, 255, 255, .78);
+      border: 1px solid var(--rule); border-radius: 12px; backdrop-filter: blur(8px);
+    }
+    .filter-group { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 0 0 auto; }
+    .filter-group:first-child { flex: 1 1 360px; }
+    .filter-label { font-size: 10.5px; color: var(--muted-2); white-space: nowrap; }
+    .chips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip-btn {
+      height: 26px; padding: 0 10px; border-radius: 999px; border: 1px solid transparent;
+      background: transparent; color: var(--muted); font-size: 11px; cursor: pointer;
+      white-space: nowrap; transition: .15s ease;
+    }
+    .chip-btn:hover { background: #F1F5F9; color: var(--ink); }
+    .chip-btn.active { background: var(--accent-soft); color: var(--accent); border-color: #BFDBFE; font-weight: 600; }
+    .segmented { display: flex; background: #F1F5F9; border-radius: 8px; padding: 2px; flex: 0 0 auto; }
+    .segmented button {
+      border: 0; background: transparent; height: 24px; padding: 0 10px; border-radius: 6px;
+      font-size: 11px; color: var(--muted); cursor: pointer; transition: .15s ease; white-space: nowrap;
+    }
+    .segmented button.active { background: #fff; color: var(--ink); font-weight: 600; box-shadow: 0 1px 3px rgba(15, 23, 42, .08); }
+    select {
+      height: 28px; border: 1px solid var(--rule); border-radius: 7px; background: #fff;
+      color: var(--ink-2); font-size: 11px; padding: 0 8px; outline: none; cursor: pointer;
+    }
+    select:focus { border-color: #93C5FD; box-shadow: 0 0 0 3px rgba(37, 99, 235, .08); }
+    .filter-summary { margin-left: auto; font-size: 10.5px; color: var(--muted-2); white-space: nowrap; }
+
+    /* ==== Main grid ==== */
+    .main-grid {
+      flex: 1 1 auto; min-height: 0; display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: minmax(0, 1.38fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+    .panel {
+      min-height: 0; display: flex; flex-direction: column;
+      background: var(--surface); border: 1px solid var(--rule);
+      border-radius: var(--radius); padding: 12px 14px 7px;
+      box-shadow: var(--shadow);
+    }
+    .panel-month { grid-column: span 8; }
+    .panel-category { grid-column: span 4; }
+    .panel-platform, .panel-refund, .panel-merchant, .panel-people { grid-column: span 3; grid-row: 2; }
+    .panel-head { flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+    .panel-head h3 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: -.01em; }
+    .panel-head p { margin: 2px 0 0; font-size: 10.5px; color: var(--muted-2); }
+    .hint { font-size: 10px; color: var(--muted-2); white-space: nowrap; }
+    .chart { flex: 1 1 auto; min-height: 0; width: 100%; }
+    .panel-foot { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 3px 0 1px; font-size: 10.5px; color: var(--muted); }
+    .panel-foot b { color: var(--ink); font-weight: 700; }
+
+    /* ==== Insights ==== */
+    .insights { flex: 0 0 auto; display: grid; grid-template-columns: auto repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .insight-title {
+      display: flex; align-items: center; padding: 0 15px; border-radius: 12px;
+      background: var(--accent-soft); color: var(--accent); border: 1px solid #BFDBFE;
+      font-size: 11px; font-weight: 600; letter-spacing: .06em; white-space: nowrap;
+    }
+    .insight {
+      min-width: 0; display: flex; flex-direction: column; justify-content: center;
+      padding: 7px 14px; background: var(--surface); border: 1px solid var(--rule);
+      border-radius: 12px;
+    }
+    .insight span { font-size: 10px; color: var(--muted-2); }
+    .insight strong { font-size: 14px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .insight em { font-style: normal; font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ==== Drawer ==== */
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 40; background: rgba(15, 23, 42, .28);
+      backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: .2s ease;
+    }
+    .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+    .drawer {
+      position: fixed; top: 0; right: 0; z-index: 50; width: min(1500px, 94vw); height: 100vh;
+      display: flex; flex-direction: column; background: #fff;
+      transform: translateX(102%); transition: transform .28s cubic-bezier(.22, .61, .36, 1);
+      box-shadow: -20px 0 60px rgba(15, 23, 42, .18);
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px 22px 11px; border-bottom: 1px solid var(--rule); }
+    .drawer-head h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+    .drawer-head p { margin: 3px 0 0; font-size: 11px; color: var(--muted); }
+    .icon-btn {
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--rule);
+      background: #fff; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+    .drawer-tabs { flex: 0 0 auto; display: flex; gap: 22px; padding: 0 22px; border-bottom: 1px solid var(--rule); }
+    .drawer-tabs button {
+      height: 42px; border: 0; background: transparent; color: var(--muted);
+      font-size: 12px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    .drawer-tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .drawer-tabs span {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 16px; padding: 0 5px; margin-left: 4px;
+      border-radius: 999px; background: #F1F5F9; color: var(--muted);
+      font-size: 9.5px; font-weight: 600;
+    }
+    .drawer-tabs button.active span { background: var(--accent-soft); color: var(--accent); }
+    .drawer-toolbar { flex: 0 0 auto; display: flex; align-items: center; gap: 10px; padding: 10px 22px; }
+    .search-box { position: relative; flex: 0 0 300px; }
+    .search-box input {
+      width: 100%; height: 32px; border: 1px solid var(--rule); border-radius: 8px;
+      padding: 0 30px 0 10px; font-size: 12px; outline: none; background: var(--surface-2);
+      transition: .15s ease;
+    }
+    .search-box input:focus { border-color: #93C5FD; background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, .08); }
+    .search-box button {
+      position: absolute; right: 4px; top: 4px; width: 24px; height: 24px;
+      border: 0; background: transparent; color: var(--muted-2); cursor: pointer; font-size: 15px;
+    }
+    .toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--muted); }
+    .drawer-note {
+      display: none; margin: 0 22px 8px; padding: 8px 12px; border-radius: 8px;
+      background: var(--warn-soft); border: 1px solid #FDE68A; color: #92400E; font-size: 11px;
+      align-items: center; gap: 10px;
+    }
+    .drawer-note.show { display: flex; }
+    .drawer-note span { flex: 1 1 auto; }
+    .table-wrap { flex: 1 1 auto; min-height: 0; overflow: auto; border-top: 1px solid var(--rule); }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 1180px; font-size: 11.5px; }
+    thead th {
+      position: sticky; top: 0; z-index: 2; background: var(--surface-2); color: var(--muted);
+      font-weight: 600; text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule);
+      white-space: nowrap; font-size: 10.5px; overflow: hidden; text-overflow: ellipsis;
+    }
+    thead th.sortable { cursor: pointer; user-select: none; }
+    thead th.sortable:hover { color: var(--ink); }
+    tbody td { padding: 8px 10px; border-bottom: 1px solid var(--rule-2); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    tbody tr:hover td { background: var(--surface-2); }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    td.net { font-weight: 700; }
+    td.ref { color: var(--warn); }
+    td.inc { color: var(--accent2); }
+    td.muted { color: var(--muted-2); }
+    .cell-desc { max-width: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .badge {
+      display: inline-flex; align-items: center; height: 18px; padding: 0 6px;
+      border-radius: 5px; font-size: 9.5px; font-weight: 600; white-space: nowrap;
+    }
+    .badge.wechat { background: var(--accent2-soft); color: #047857; }
+    .badge.alipay { background: var(--accent-soft); color: #1D4ED8; }
+    .badge.exp { background: #F1F5F9; color: #475569; }
+    .badge.inc { background: var(--accent2-soft); color: #047857; }
+    .badge.full { background: var(--danger-soft); color: #B91C1C; }
+    .badge.part { background: var(--warn-soft); color: #B45309; }
+    .badge.none { background: var(--surface-2); color: var(--muted-2); }
+    .badge.match { background: var(--accent2-soft); color: #047857; }
+    .badge.unmatch { background: var(--danger-soft); color: #B91C1C; }
+    .assign-select { height: 26px; max-width: 150px; font-size: 11px; padding: 0 6px; border-radius: 6px; }
+    .detail-row td { background: var(--surface-2); padding: 12px 18px; }
+    .detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 24px; font-size: 10.5px; color: var(--muted); }
+    .detail-grid div { min-width: 0; }
+    .detail-grid b { display: block; margin-top: 2px; color: var(--ink); font-weight: 600; word-break: break-all; }
+    .empty { padding: 48px; text-align: center; color: var(--muted-2); font-size: 12px; }
+    .drawer-foot {
+      flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 22px; border-top: 1px solid var(--rule); font-size: 11px; color: var(--muted);
+    }
+    .pager { display: flex; gap: 6px; }
+    .pager button {
+      height: 26px; padding: 0 10px; border: 1px solid var(--rule); background: #fff;
+      border-radius: 6px; font-size: 11px; color: var(--ink-2); cursor: pointer;
+    }
+    .pager button:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ==== Modal ==== */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, .32);
+      backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: .2s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      position: fixed; left: 50%; top: 50%; z-index: 61; width: min(720px, 92vw); max-height: 82vh;
+      display: flex; flex-direction: column; background: #fff; border-radius: 16px;
+      opacity: 0; pointer-events: none; transform: translate(-50%, -46%);
+      transition: .22s ease; box-shadow: 0 30px 80px rgba(15, 23, 42, .24);
+    }
+    .modal.open { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 12px; }
+    .modal-head h2 { margin: 0; font-size: 18px; font-weight: 700; }
+    .modal-body { padding: 0 22px 22px; overflow: auto; font-size: 12.5px; line-height: 1.75; color: var(--ink-2); }
+    .modal-body h3 { margin: 16px 0 6px; font-size: 12px; color: var(--ink); }
+    .modal-body p { margin: 0 0 8px; color: var(--muted); }
+    .modal-body ul { margin: 0; padding-left: 18px; color: var(--muted); }
+    .modal-body li { margin-bottom: 4px; }
+    .modal-body b { color: var(--ink); }
+
+    .toast {
+      position: fixed; left: 50%; top: 12vh; z-index: 200;
+      transform: translate(-50%, -14px); padding: 12px 24px; border-radius: 12px;
+      background: rgba(15, 23, 42, .94); color: #fff;
+      font-size: 14px; font-weight: 500; line-height: 1.45; letter-spacing: .01em;
+      max-width: min(78vw, 720px); text-align: center;
+      box-shadow: 0 14px 36px rgba(15, 23, 42, .2);
+      opacity: 0; pointer-events: none; transition: .24s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.ok { background: #047857; box-shadow: 0 14px 36px rgba(4, 120, 87, .3); }
+    .toast.warn { background: #B45309; box-shadow: 0 14px 36px rgba(180, 83, 9, .3); }
+    .toast.err { background: #B91C1C; box-shadow: 0 14px 36px rgba(185, 28, 28, .3); }
+
+    /* ==== Welcome / Upload ==== */
+    .welcome {
+      position: fixed; inset: 0; z-index: 80; overflow: auto;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+      background: rgba(244, 246, 250, .9); backdrop-filter: blur(10px);
+      transition: opacity .24s ease, visibility .24s ease;
+    }
+    .welcome.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+    .welcome-card {
+      width: min(760px, 100%); background: #fff; border: 1px solid var(--rule);
+      border-radius: 20px; box-shadow: 0 30px 80px rgba(15, 23, 42, .14);
+      padding: 30px 34px 26px;
+    }
+    .welcome-brand { display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center; }
+    .welcome-brand h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
+    .welcome-sub { margin: 8px 0 20px; color: var(--muted); font-size: 12.5px; line-height: 1.8; }
+    .welcome-sub b { color: var(--accent); }
+    .dropzone {
+      position: relative; border: 1.5px dashed #BFDBFE; background: var(--accent-soft);
+      border-radius: 14px; padding: 30px 20px; text-align: center; cursor: pointer;
+      transition: .18s ease;
+    }
+    .dropzone:hover, .dropzone.over { border-color: var(--accent); background: #E8F1FF; transform: translateY(-1px); }
+    .dropzone input { display: none; }
+    .dz-icon { font-size: 30px; color: var(--accent); line-height: 1; }
+    .dz-title { margin-top: 9px; font-size: 14px; font-weight: 700; }
+    .dz-hint { margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+    .welcome-status { margin-top: 10px; min-height: 17px; font-size: 11.5px; color: var(--accent); }
+    .welcome-tips { margin: 18px 0 0; padding-left: 18px; color: var(--muted); font-size: 11.5px; line-height: 1.9; }
+    .welcome-tips b { color: var(--ink-2); }
+    .welcome-note { margin: 14px 0 0; font-size: 11px; color: var(--muted-2); }
+
+    @media (max-height: 820px) and (min-width: 1201px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100vh; }
+      .main-grid { flex: none; grid-template-rows: 430px 330px; }
+    }
+    @media (max-width: 1500px) {
+      .kpi-value { font-size: 21px; }
+      .brand { min-width: 260px; }
+      .top-meta .chip:nth-child(n+3) { display: none; }
+    }
+    @media (max-width: 1200px) {
+      body { overflow: auto; }
+      .app { height: auto; min-height: 100vh; }
+      .main-grid { flex: none; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; }
+      .panel-month, .panel-category, .panel-platform, .panel-refund, .panel-merchant, .panel-people { grid-column: span 1; grid-row: auto; }
+      .panel-month { grid-column: span 2; }
+      .panel { min-height: 320px; }
+      .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .insights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .insight-title { grid-column: span 2; height: 34px; justify-content: center; }
+    }
+    @media (max-width: 760px) {
+      .app { padding: 10px; }
+      .topbar { height: auto; flex-wrap: wrap; gap: 10px; }
+      .brand { min-width: 0; max-width: 100%; }
+      .filebar-label { display: none; }
+      .file-item { max-width: 260px; }
+      .file-name { max-width: 130px; }
+      .top-meta { display: none; }
+      .top-actions { margin-left: auto; flex-wrap: wrap; }
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filterbar { flex-wrap: wrap; }
+      .filter-summary { display: none; }
+      .main-grid { grid-template-columns: 1fr; }
+      .panel-month { grid-column: span 1; }
+      .panel { min-height: 300px; }
+      .insights { grid-template-columns: 1fr; }
+      .insight-title { grid-column: span 1; }
+      .drawer { width: 100vw; }
+      .drawer-toolbar { flex-wrap: wrap; }
+      .search-box { flex: 1 1 100%; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .welcome-card { padding: 22px 18px; }
+      .welcome-brand h1 { font-size: 21px; }
+    }
+    @media print {
+      .top-actions, .filterbar, .filebar, .drawer, .drawer-backdrop, .modal, .modal-backdrop, .welcome { display: none !important; }
+      .app { height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <div>
+          <h1 id="brand-title">微信 / 支付宝消费账单统计系统</h1>
+          <p id="brand-sub">上传微信 / 支付宝账单后自动生成</p>
+        </div>
+      </div>
+      <div class="top-meta">
+        <span class="chip accent">退款已并入原单</span>
+        <span class="chip green">收支并重</span>
+        <span class="chip" id="chip-source">--</span>
+        <span class="chip" id="chip-updated">--</span>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="import-bill">导入账单</button>
+        <button class="btn ghost" id="clear-bill">清空账单</button>
+        <button class="btn primary" id="download-excel">下载整理表格</button>
+        <button class="btn" id="open-detail">查看明细</button>
+        <button class="btn" id="open-method">口径说明</button>
+      </div>
+    </header>
+
+    <div class="filebar" id="filebar" hidden>
+      <span class="filebar-label">已导入 <b id="file-count">0</b> 个文件</span>
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <section class="kpi-grid">
+      <article class="kpi" style="--kpi-color: var(--accent)">
+        <div class="kpi-label"><span class="dot"></span>净支出（含往来）</div>
+        <div class="kpi-value"><span id="kpi-exp">0.00</span><span class="unit">元</span></div>
+        <div class="kpi-sub" id="kpi-exp-sub">等待数据</div>
+      </article>
+      <article class="kpi" style="--kpi-color: var(--cat-3)">
+        <div class="kpi-label"><span class="dot"></span>纯消费（不含往来）</div>
+        <div class="kpi-value"><span id="kpi-pure">0.00</span><span class="unit">元</span></div>
+        <div class="kpi-sub" id="kpi-pure-sub">剔除转账 / 红包 / 群收款</div>
+      </article>
+      <article class="kpi" style="--kpi-color: var(--accent2)">
+        <div class="kpi-label"><span class="dot"></span>净收入</div>
+        <div class="kpi-value"><span id="kpi-inc">0.00</span><span class="unit">元</span></div>
+        <div class="kpi-sub" id="kpi-inc-sub">等待数据</div>
+      </article>
+      <article class="kpi" style="--kpi-color: var(--warn)">
+        <div class="kpi-label"><span class="dot"></span>退款冲减</div>
+        <div class="kpi-value"><span id="kpi-ref">0.00</span><span class="unit">元</span></div>
+        <div class="kpi-sub" id="kpi-ref-sub">等待数据</div>
+      </article>
+      <article class="kpi" style="--kpi-color: var(--violet)">
+        <div class="kpi-label"><span class="dot"></span>往来支出</div>
+        <div class="kpi-value"><span id="kpi-rel">0.00</span><span class="unit">元</span></div>
+        <div class="kpi-sub">转账 / 红包 / 群收款</div>
+      </article>
+      <article class="kpi" style="--kpi-color: var(--cat-18)">
+        <div class="kpi-label"><span class="dot"></span>有效支出笔数</div>
+        <div class="kpi-value"><span id="kpi-count">0</span><span class="unit">笔</span></div>
+        <div class="kpi-sub" id="kpi-count-sub">等待数据</div>
+      </article>
+    </section>
+
+    <section class="filterbar">
+      <div class="filter-group">
+        <span class="filter-label">月份</span>
+        <div class="chips" id="month-chips"></div>
+      </div>
+      <div class="filter-group" id="platform-group">
+        <span class="filter-label">平台</span>
+        <div class="segmented" id="platform-seg"></div>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">分类</span>
+        <select id="category-select"><option value="all">全部分类</option></select>
+      </div>
+      <button class="btn ghost" id="reset-filters">重置</button>
+      <div class="filter-summary" id="filter-summary">全部月份 · 全部平台 · 全部分类</div>
+    </section>
+
+    <main class="main-grid">
+      <section class="panel panel-month">
+        <div class="panel-head">
+          <div>
+            <h3>月度收支趋势</h3>
+            <p>柱形为净额，折线为退款冲减</p>
+          </div>
+          <span class="hint">点击月份筛选</span>
+        </div>
+        <div class="chart" id="chart-month"></div>
+      </section>
+
+      <section class="panel panel-category">
+        <div class="panel-head">
+          <div>
+            <h3>支出分类构成</h3>
+            <p>按净额排序，TOP 10 + 其他</p>
+          </div>
+          <span class="hint">点击扇区筛选</span>
+        </div>
+        <div class="chart" id="chart-category"></div>
+      </section>
+
+      <section class="panel panel-platform">
+        <div class="panel-head">
+          <div>
+            <h3>平台对比</h3>
+            <p id="platform-panel-sub">微信 vs 支付宝</p>
+          </div>
+          <span class="hint">点击筛选</span>
+        </div>
+        <div class="chart" id="chart-platform"></div>
+      </section>
+
+      <section class="panel panel-refund">
+        <div class="panel-head">
+          <div>
+            <h3>退款处理</h3>
+            <p>退款已合并到原消费单</p>
+          </div>
+          <span class="hint">净额口径</span>
+        </div>
+        <div class="chart" id="chart-refund"></div>
+        <div class="panel-foot">
+          <span>已匹配 <b id="refund-matched">--</b> 笔</span>
+          <span>跨年 <b id="refund-unmatched">--</b> 笔</span>
+        </div>
+      </section>
+
+      <section class="panel panel-merchant">
+        <div class="panel-head">
+          <div>
+            <h3>商户支出 TOP 10</h3>
+            <p>不含转账与红包</p>
+          </div>
+          <span class="hint">点击看明细</span>
+        </div>
+        <div class="chart" id="chart-merchant"></div>
+      </section>
+
+      <section class="panel panel-people">
+        <div class="panel-head">
+          <div>
+            <h3>往来对象 TOP 10</h3>
+            <p>转出为负，转入为正</p>
+          </div>
+          <span class="hint">点击看明细</span>
+        </div>
+        <div class="chart" id="chart-people"></div>
+      </section>
+    </main>
+
+    <section class="insights">
+      <div class="insight-title">数据洞察</div>
+      <div class="insight">
+        <span>支出最高月份</span>
+        <strong id="insight-month-value">--</strong>
+        <em id="insight-month-sub">--</em>
+      </div>
+      <div class="insight">
+        <span>最大支出分类</span>
+        <strong id="insight-cat-value">--</strong>
+        <em id="insight-cat-sub">--</em>
+      </div>
+      <div class="insight">
+        <span>退款最多分类</span>
+        <strong id="insight-refund-value">--</strong>
+        <em id="insight-refund-sub">--</em>
+      </div>
+      <div class="insight">
+        <span>待确认商户</span>
+        <strong id="insight-unknown-value">--</strong>
+        <em id="insight-unknown-sub">--</em>
+      </div>
+    </section>
+  </div>
+
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2>账单明细</h2>
+        <p id="drawer-sub">等待数据</p>
+      </div>
+      <button class="icon-btn" id="close-drawer" aria-label="关闭">×</button>
+    </div>
+    <div class="drawer-tabs">
+      <button data-tab="detail" class="active">消费明细 <span id="tab-count-detail">0</span></button>
+      <button data-tab="refunds">退款核对 <span id="tab-count-refunds">0</span></button>
+      <button data-tab="neutral">不计收支 <span id="tab-count-neutral">0</span></button>
+      <button data-tab="unknown">待确认分类 <span id="tab-count-unknown">0</span></button>
+    </div>
+    <div class="drawer-toolbar">
+      <div class="search-box">
+        <input id="drawer-search" type="text" placeholder="搜索商户、分类、商品、金额…" autocomplete="off">
+        <button id="clear-search" aria-label="清空搜索">×</button>
+      </div>
+      <div class="toolbar-right">
+        <span id="drawer-count">--</span>
+        <button class="btn small" id="export-csv">导出当前表 CSV</button>
+      </div>
+    </div>
+    <div class="drawer-note" id="drawer-note">
+      <span id="drawer-note-text">这些商户暂归「其他」。在右侧选择分类会立即重算，并保存在本机浏览器。</span>
+      <button class="btn small" id="clear-overrides">清空已保存分类</button>
+    </div>
+    <div class="table-wrap">
+      <table id="data-table">
+        <colgroup id="data-colgroup"></colgroup>
+        <thead id="data-thead"></thead>
+        <tbody id="data-tbody"></tbody>
+      </table>
+    </div>
+    <div class="drawer-foot">
+      <span id="page-info">--</span>
+      <div class="pager">
+        <button id="prev-page">上一页</button>
+        <button id="next-page">下一页</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="modal-backdrop" id="modal-backdrop"></div>
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-head">
+      <h2>口径说明</h2>
+      <button class="icon-btn" id="close-modal" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <p>导入账单后，这里会展示本次数据的口径说明。</p>
+    </div>
+  </div>
+
+  <div class="welcome" id="welcome">
+    <div class="welcome-card">
+      <div class="welcome-brand">
+        <h1>微信 / 支付宝消费账单统计系统</h1>
+      </div>
+      <p class="welcome-sub">
+        上传微信支付账单和 / 或支付宝交易明细，自动合并退款、识别分类，生成<b>净支出</b>口径的图表与可下载的整理表格。<br>
+        文件<b>只在你的浏览器里解析</b>，不会上传到任何服务器。
+      </p>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon">＋</div>
+        <div class="dz-title">拖入账单文件，或点击选择</div>
+        <div class="dz-hint">微信 .xlsx / .csv，支付宝 .csv；可一次拖入多个，也可以分批导入</div>
+        <input type="file" id="file-input" multiple accept=".xlsx,.xls,.csv,.txt">
+      </div>
+      <div class="welcome-status" id="welcome-status"></div>
+
+      <ul class="welcome-tips">
+        <li><b>微信</b>：我 → 服务 → 钱包 → 账单 → 常见问题 → 下载账单 → 用于个人对账，得到 xlsx。</li>
+        <li><b>支付宝</b>：我的 → 账单 → 右上角「…」→ 开具交易流水证明 → 用于个人对账，得到 csv。</li>
+        <li>两个都传 = 合并汇总；只传一个 = 单平台分析，图表会自动适配。</li>
+        <li>文件数量不限：重复上传同一个文件会自动跳过；日期范围更大的新账单会自动替换旧文件。</li>
+        <li>已导入的文件会显示在顶部文件条里，点 × 可单独移除；想全部重来，点右上角「清空账单」。</li>
+      </ul>
+      <p class="welcome-note">提示：账单含敏感信息。本项目完全离线运行，无任何网络请求，数据也不落盘。</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="./vendor/echarts.min.js"></script>
+  <script src="./vendor/exceljs.min.js"></script>
+  <script src="./assets/parser.js"></script>
+  <script src="./assets/core.js"></script>
+  <script src="./assets/charts.js"></script>
+  <script src="./assets/excel.js"></script>
+  <script src="./assets/app.js"></script>
+</body>
+</html>
